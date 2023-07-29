@@ -16,8 +16,8 @@ if (USE_PINO_PRETTY) {
   }
 }
 
-const baseLogger = createLogger(loggerOptions)
-export const logger = baseLogger.child({ module: 'main' })
+export const baseLogger = createLogger(loggerOptions)
+export const eventLogger = baseLogger.child({ module: 'event' })
 export const djsLogger = baseLogger.child({ module: 'discord.js' })
 const djsName = { name: 'discord.js' }
 
@@ -150,22 +150,22 @@ export const logging = new SleetModule(
     },
 
     sleetError(error) {
-      logger.error({ ...moduleName(), type: 'sleet-error', error }, error)
+      eventLogger.error({ ...moduleName(), type: 'sleet-error', error }, error)
     },
     sleetWarn(warning) {
-      logger.warn({ ...moduleName(), type: 'sleet-warn' }, warning)
+      eventLogger.warn({ ...moduleName(), type: 'sleet-warn' }, warning)
     },
     sleetDebug(debug) {
-      logger.debug({ ...moduleName(), type: 'sleet-debug' }, debug)
+      eventLogger.debug({ ...moduleName(), type: 'sleet-debug' }, debug)
     },
     applicationInteractionError(_module, _interaction, error) {
-      logger.error(
+      eventLogger.error(
         { ...moduleName(), type: 'interaction-error', error },
         error instanceof Error ? error.message : String(error),
       )
     },
     autocompleteInteractionError(_module, _interaction, error) {
-      logger.error(
+      eventLogger.error(
         { ...moduleName(), type: 'autocomplete-error', error },
         error instanceof Error ? error.message : String(error),
       )
@@ -181,7 +181,7 @@ export const logging = new SleetModule(
     //   )
     // },
     runModule(module, interaction) {
-      logger.debug(
+      eventLogger.debug(
         {
           name: module.name,
           type: 'run-module',
@@ -192,7 +192,7 @@ export const logging = new SleetModule(
       )
     },
     loadModule(module, qualifiedName) {
-      logger.info(
+      eventLogger.info(
         {
           name: module.name,
           type: 'load-module',
@@ -202,7 +202,7 @@ export const logging = new SleetModule(
       )
     },
     unloadModule(module, qualifiedName) {
-      logger.info(
+      eventLogger.info(
         {
           name: module.name,
           type: 'unload-module',

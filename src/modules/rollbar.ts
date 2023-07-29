@@ -2,7 +2,7 @@ import Rollbar from 'rollbar'
 import env from 'env-var'
 import { AutocompleteInteraction } from 'discord.js'
 import { ApplicationInteraction, SleetModule } from 'sleetcord'
-import { interactionToString } from './logging.js'
+import { interactionToString } from '../utils/stringify.js'
 
 const NODE_ENV = env.get('NODE_ENV').required().asString()
 const accessToken = env.get('ROLLBAR_ACCESS_TOKEN').asString()

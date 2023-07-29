@@ -1,0 +1,61 @@
+{
+  "name": "sleetcord-common",
+  "version": "1.0.0",
+  "description": "Common modules/utils for sleetcord bots",
+  "type": "module",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "src",
+    "LICENSE",
+    "README.md"
+  ],
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "require": {
+      "types": "./dist/index.d.cts",
+      "default": "./dist/index.cjs"
+    },
+    "import": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "eslint src/ && prettier --check src/ && tsc --noEmit",
+    "lint:fix": "eslint src/ --fix && prettier --write src/ && tsc --noEmit",
+    "start:dev": "node --loader ts-node/esm -r dotenv/config test/index.ts",
+    "prepublishOnly": "pnpm run lint && pnpm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AtoraSuunva/sleetcord-common.git"
+  },
+  "keywords": [],
+  "author": "AtoraSuunva",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AtoraSuunva/sleetcord-common/issues"
+  },
+  "homepage": "https://github.com/AtoraSuunva/sleetcord-common#readme",
+  "peerDependencies": {
+    "discord.js": "^14.11.0",
+    "env-var": "^7.3.1",
+    "pino": "^8.14.2",
+    "pretty-ms": "^8.0.0",
+    "rollbar": "^2.26.2",
+    "sleetcord": "^0.15.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.5",
+    "@typescript-eslint/eslint-plugin": "^6.2.0",
+    "@typescript-eslint/parser": "^6.2.0",
+    "eslint": "^8.46.0",
+    "eslint-config-prettier": "^8.9.0",
+    "eslint-plugin-import": "^2.28.0",
+    "prettier": "^3.0.0",
+    "tsup": "^7.1.0",
+    "typescript": "^5.1.6"
+  }
+}

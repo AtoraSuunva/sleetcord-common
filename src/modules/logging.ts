@@ -41,15 +41,22 @@ export const logging = new SleetModule(
           rateLimitInfo,
         )
       })
-      this.client.rest.on('response', (request, response) => {
-        const path = `${request.method} ${censorPath(request.path)} ${
-          response.statusCode
+      this.client.rest.on('response', (req, res) => {
+        if (!(res instanceof Response)) {
+          djsLogger.warn(
+            "Response is not a Response object, set `makeRequest: fetch` in your rest client options. You might need `makeRequest: fetch as unknown as RESTOptions['makeRequest'],` for it to work nicely.",
+          )
+          return
+        }
+
+        const path = `${req.method} ${censorPath(req.path)} ${res.status} ${
+          res.statusText
         }`
 
         const ratelimit = {
-          remaining: response.headers['x-ratelimit-remaining'],
-          limit: response.headers['x-ratelimit-limit'],
-          resetAfter: response.headers['x-ratelimit-reset-after'],
+          remaining: res.headers.get('x-ratelimit-remaining'),
+          limit: res.headers.get('x-ratelimit-limit'),
+          resetAfter: res.headers.get('x-ratelimit-reset-after'),
         }
 
         const ratelimitLine = ratelimit.remaining
@@ -57,16 +64,16 @@ export const logging = new SleetModule(
           : ''
         let body = ''
 
-        if (response.statusCode >= 400) {
+        if (res.status >= 400) {
           const bodyBuilder = []
-          if (request.method !== 'GET') {
+
+          if (req.method !== 'GET') {
             bodyBuilder.push('\nRequest:\n')
-            bodyBuilder.push(JSON.stringify(request.data.body, null, 2))
-            // unfortunately there's no easy way to clone the response body without consuming it because it's some weird undici thing
-            // there's a commit that does allow you to override `makeRequest` with native `fetch` that returns a cloneable response
-            // but it doesn't seem to be there in the latest release
-            // see https://github.com/discordjs/discord.js/commit/cdaa0a36f586459f1e5ede868c4250c7da90455c
-            // bodyBuilder.push('\nResponse:\n')
+            bodyBuilder.push(JSON.stringify(req.data.body, null, 2))
+            if (!res.bodyUsed && !res.body.locked) {
+              bodyBuilder.push('\nResponse:\n')
+              bodyBuilder.push(JSON.stringify(res.clone().body, null, 2))
+            }
           }
 
           body = bodyBuilder.join('')

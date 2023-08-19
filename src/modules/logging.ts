@@ -70,7 +70,7 @@ export const logging = new SleetModule(
           if (req.method !== 'GET') {
             bodyBuilder.push('\nRequest:\n')
             bodyBuilder.push(JSON.stringify(req.data.body, null, 2))
-            if (!res.bodyUsed && !res.body.locked) {
+            if (!res.bodyUsed && res.body !== null && !res.body.locked) {
               bodyBuilder.push('\nResponse:\n')
               bodyBuilder.push(JSON.stringify(res.clone().body, null, 2))
             }

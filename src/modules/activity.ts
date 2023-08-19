@@ -11,8 +11,33 @@ import { MINUTE } from '../utils/constants.js'
 import { readFile } from 'fs/promises'
 import env from 'env-var'
 
-/** Our activity list needs a type and name to apply */
-type Activity = Required<Pick<ActivityOptions, 'name' | 'type'>>
+/** Holds the timeout that we use to periodically change the activity */
+let timeout: NodeJS.Timeout
+/** Every 15m, change the current activity */
+const timeoutDelay = 15 * MINUTE // in ms
+/** These activities will be randomly selected and shown by the bot */
+const activities: ActivityOptions[] = []
+
+/** You shouldn't see this, this is just a fallback activity if the random pick fails */
+const FALLBACK_ACTIVITY: ActivityOptions = {
+  type: ActivityType.Custom,
+  name: 'Failed to load activity!',
+} as const
+
+/** Maps from an activity ID or string to a display string */
+const reverseActivityTypesMap: Record<
+  Exclude<ActivityOptions['type'], undefined>,
+  string
+> = {
+  [ActivityType.Playing]: 'Playing',
+  [ActivityType.Streaming]: 'Streaming',
+  [ActivityType.Listening]: 'Listening to',
+  [ActivityType.Watching]: 'Watching',
+  [ActivityType.Custom]: 'Custom',
+  [ActivityType.Competing]: 'Competing in',
+}
+
+const ACTIVITIES_FILE = env.get('ACTIVITIES_FILE').asString()
 
 /**
  * Valid choices for activities that bots can set
@@ -33,6 +58,10 @@ const activityChoices: APIApplicationCommandOptionChoice<number>[] = [
   {
     name: 'watching',
     value: ActivityType.Watching,
+  },
+  {
+    name: 'custom',
+    value: ActivityType.Custom,
   },
   {
     name: 'competing',
@@ -59,6 +88,11 @@ export const activity = new SleetSlashCommand(
         description: 'The activity type to set',
         choices: activityChoices,
       },
+      {
+        name: 'state',
+        type: ApplicationCommandOptionType.String,
+        description: 'The activity state to set',
+      },
     ],
     registerOnlyInGuilds: [],
   },
@@ -67,50 +101,6 @@ export const activity = new SleetSlashCommand(
     run: runActivity,
   },
 )
-
-/** Holds the timeout that we use to periodically change the activity */
-let timeout: NodeJS.Timeout
-/** Every 15m, change the current activity */
-const timeoutDelay = 15 * MINUTE // in ms
-/** These activities will be randomly selected and shown by the bot */
-const activities: Activity[] = []
-
-const ACTIVITIES_FILE = env.get('ACTIVITIES_FILE').asString()
-
-async function loadActivities() {
-  if (!ACTIVITIES_FILE) return
-
-  const lines = await readFile(ACTIVITIES_FILE, 'utf-8').then((content) =>
-    content.trim().split('\n'),
-  )
-
-  const stats: Activity[] = lines.map((line) => {
-    const space = line.indexOf(' ') + 1
-    let [type, name] = [line.substring(0, space), line.substring(space)].map(
-      (str) => str.trim(),
-    )
-
-    type = type.replace(/{(\w+)}/, '$1')
-
-    if (!(type in ActivityType)) {
-      type = 'Playing'
-      name = line
-    }
-
-    let actType = ActivityType[type as keyof typeof ActivityType]
-
-    if (actType === ActivityType.Custom) {
-      actType = ActivityType.Playing
-    }
-
-    return {
-      type: actType,
-      name,
-    }
-  })
-
-  activities.push(...stats)
-}
 
 /** Run a timeout to change the bot's activity on READY and every couple mins */
 async function runReady(client: Client) {
@@ -122,6 +112,78 @@ async function runReady(client: Client) {
   timeout = setTimeout(() => {
     void runReady(client)
   }, timeoutDelay)
+}
+
+/** Either set a new random activity, or set it to the one the user specified */
+async function runActivity(
+  this: SleetContext,
+  interaction: ChatInputCommandInteraction,
+) {
+  await isOwnerGuard(interaction)
+
+  const name = interaction.options.getString('name')
+  const type = interaction.options.getInteger('type') as Exclude<
+    ActivityOptions['type'],
+    undefined
+  > | null
+  const state = interaction.options.getString('state')
+
+  let activity: ActivityOptions
+  clearTimeout(timeout)
+
+  if (type === null && name === null) {
+    // Set a random one
+    activity = getRandomActivity()
+    timeout = setTimeout(() => {
+      void runReady(interaction.client)
+    }, timeoutDelay)
+  } else {
+    const previousActivity = interaction.client.user.presence.activities[0]
+    activity = {
+      type: type ?? previousActivity.type,
+      name: name ?? previousActivity.name,
+    }
+
+    if (state) {
+      activity.state = state
+    }
+  }
+
+  setClientActivity(interaction.client, activity)
+
+  return interaction.reply({
+    ephemeral: true,
+    content: `Set activity to:\n> ${formatActivity(activity)}`,
+  })
+}
+
+async function loadActivities() {
+  if (!ACTIVITIES_FILE) return
+
+  const lines = await readFile(ACTIVITIES_FILE, 'utf-8').then((content) =>
+    content.trim().split('\n'),
+  )
+
+  const stats: ActivityOptions[] = lines.map((line) => {
+    const space = line.indexOf(' ') + 1
+    let [type, name] = [line.substring(0, space), line.substring(space)].map(
+      (str) => str.trim(),
+    )
+
+    type = type.replace(/{(\w+)}/, '$1')
+
+    if (!(type in ActivityType)) {
+      type = 'Custom'
+      name = line
+    }
+
+    return {
+      type: ActivityType[type as keyof typeof ActivityType],
+      name,
+    }
+  })
+
+  activities.push(...stats)
 }
 
 /**
@@ -146,71 +208,13 @@ function setClientActivity(client: Client, activity: ActivityOptions) {
   }
 }
 
-/** Either set a new random activity, or set it to the one the user specified */
-async function runActivity(
-  this: SleetContext,
-  interaction: ChatInputCommandInteraction,
-) {
-  await isOwnerGuard(interaction)
-
-  const name = interaction.options.getString('name')
-  const type = interaction.options.getInteger('type') as Exclude<
-    ActivityOptions['type'],
-    undefined
-  > | null
-
-  let activity: Activity
-  clearTimeout(timeout)
-
-  if (type === null && name === null) {
-    // Set a random one
-    activity = getRandomActivity()
-    timeout = setTimeout(() => {
-      void runReady(interaction.client)
-    }, timeoutDelay)
-  } else {
-    const previousActivity = interaction.client.user.presence.activities[0]
-    activity = {
-      type:
-        type ??
-        (previousActivity.type as Exclude<ActivityType, ActivityType.Custom>),
-      name: name ?? previousActivity.name,
-    }
-  }
-
-  setClientActivity(interaction.client, activity)
-
-  return interaction.reply({
-    ephemeral: true,
-    content: `Set activity to:\n> ${formatActivity(activity)}`,
-  })
-}
-
-/** You shouldn't see this, this is just a fallback activity if the random pick fails */
-const FALLBACK_ACTIVITY: Activity = {
-  type: ActivityType.Playing,
-  name: 'failed to load activity!',
-} as const
-
 /**
  * Get a random activity from our list of activities
  * @returns a random activity from the list
  */
-function getRandomActivity(): Activity {
+function getRandomActivity(): ActivityOptions {
   const randomIndex = Math.floor(Math.random() * activities.length)
   return activities[randomIndex] ?? FALLBACK_ACTIVITY
-}
-
-/** Maps from an activity ID or string to a display string */
-const reverseActivityTypesMap: Record<
-  Exclude<Activity['type'], undefined>,
-  string
-> = {
-  [ActivityType.Playing]: 'Playing',
-  [ActivityType.Streaming]: 'Streaming',
-  [ActivityType.Listening]: 'Listening to',
-  [ActivityType.Watching]: 'Watching',
-  [ActivityType.Competing]: 'Competing in',
 }
 
 /**
@@ -218,8 +222,9 @@ const reverseActivityTypesMap: Record<
  * @param activity The activity object
  * @returns The formatted string
  */
-function formatActivity(activity: Activity): string {
-  const activityType = reverseActivityTypesMap[activity.type]
+function formatActivity(activity: ActivityOptions): string {
+  const activityType =
+    reverseActivityTypesMap[activity.type ?? ActivityType.Custom]
   const formattedType = activityType ? `**${activityType}** ` : ''
   return `${formattedType}${activity.name}`
 }

@@ -2,12 +2,15 @@ import {
   ChatInputCommandInteraction,
   Client,
   EmbedBuilder,
+  Guild,
+  Invite,
   Team,
   User,
   version as discordJSVersion,
 } from 'discord.js'
 import { SleetSlashCommand, formatUser } from 'sleetcord'
 import * as os from 'node:os'
+import { notNullish } from '../utils/functions.js'
 
 /**
  * Get some info about the bot, currently includes:
@@ -15,6 +18,8 @@ import * as os from 'node:os'
  *   - Version (Node/d.js)
  *   - CPU Load Average
  *   - Memory Usage
+ *   - Bot Guild
+ *   - Approximate Guild Count
  */
 export const info = new SleetSlashCommand(
   {
@@ -29,18 +34,21 @@ export const info = new SleetSlashCommand(
 /** os.loadavg() "Returns an array containing the 1, 5, and 15 minute load averages." */
 const cpuLoadIntervals = [1, 5, 15]
 
-/** Get the info! */
+let CACHED_INVITE: Invite | null = null
+
 async function runInfo(interaction: ChatInputCommandInteraction) {
+  const { client } = interaction
+
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: formatUser(interaction.client.user, {
+      name: formatUser(client.user, {
         markdown: false,
         escape: false,
       }),
     })
-    .setThumbnail(interaction.client.user.displayAvatarURL())
+    .setThumbnail(client.user.displayAvatarURL())
 
-  const owner = formatOwner(interaction.client)
+  const owner = formatOwner(client)
   const versionInfo = `Node ${process.version}\ndiscord.js v${discordJSVersion}`
   const cpuString = os
     .loadavg()
@@ -54,11 +62,33 @@ async function runInfo(interaction: ChatInputCommandInteraction) {
     totalMem,
   )} (${usedMemPercent}%)`
 
+  const approximateGuildCount =
+    client.application.approximateGuildCount?.toLocaleString() ?? 'Unknown'
+
+  const botGuild = client.application.guild
+
+  const botGuildInvite = botGuild
+    ? await ensureInviteFor(botGuild, CACHED_INVITE)
+    : null
+
+  if (CACHED_INVITE == null && botGuildInvite) {
+    CACHED_INVITE = botGuildInvite
+  }
+
+  const botGuildInfo =
+    botGuild === null
+      ? 'Unknown'
+      : `${botGuild.name} (${botGuild.id}) ${
+          botGuildInvite ? `[[Invite]](${botGuildInvite.url})` : ''
+        }`
+
   embed.addFields([
     { name: 'Owner', value: owner, inline: true },
     { name: 'Using', value: versionInfo, inline: true },
     { name: 'CPU Load Average', value: cpuString, inline: false },
     { name: 'Memory Usage', value: memoryString, inline: true },
+    { name: 'Bot Guild', value: botGuildInfo, inline: true },
+    { name: 'Approximate Guilds', value: approximateGuildCount, inline: true },
   ])
 
   await interaction.reply({
@@ -98,4 +128,34 @@ function formatOwner(client: Client<true>): string {
   } else {
     return '<Unknown>'
   }
+}
+
+async function ensureInviteFor(
+  guild: Guild,
+  cachedInvite: Invite | null,
+): Promise<Invite | null> {
+  if (cachedInvite === null) {
+    const channels = await guild.channels.fetch()
+    const firstChannel =
+      channels.find((c) => c !== null && c.id === guild.rulesChannelId) ??
+      channels
+        .filter(notNullish)
+        .sort((a, b) => a.rawPosition - b.rawPosition)
+        .find((c) => 'createInvite' in c)
+
+    if (firstChannel === undefined) {
+      return null
+    }
+
+    if ('createInvite' in firstChannel) {
+      cachedInvite = CACHED_INVITE = await firstChannel.createInvite({
+        maxAge: 0,
+        maxUses: 0,
+        temporary: false,
+        unique: false,
+      })
+    }
+  }
+
+  return cachedInvite
 }

@@ -5,9 +5,13 @@ import { interactionToString } from '../utils/stringify.js'
 
 const NODE_ENV = env.get('NODE_ENV').required().asString()
 const USE_PINO_PRETTY = env.get('USE_PINO_PRETTY').required().asBool()
+const LOG_LEVEL_ENV = env.get('LOG_LEVEL').asString()
+
+export const LOG_LEVEL =
+  LOG_LEVEL_ENV ?? NODE_ENV === 'development' ? 'debug' : 'info'
 
 const loggerOptions: LoggerOptions = {
-  level: NODE_ENV === 'development' ? 'debug' : 'info',
+  level: LOG_LEVEL,
 }
 
 if (USE_PINO_PRETTY) {
@@ -249,7 +253,13 @@ export function censorPath(path: string): string {
   return path
 }
 
-export function moduleName(): { name: string } | undefined {
+/**
+ * Get the name of the currently-running module from the running module store, if available
+ *
+ * Returned as an object so it can be spread into context objects
+ * @returns The name of the currently running module, or undefined if there is none
+ */
+function moduleName(): { name: string } | undefined {
   const module = runningModuleStore.getStore()
   if (module) {
     return { name: module.name }

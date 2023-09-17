@@ -72,7 +72,7 @@ export const sentryModuleRunner: ModuleRunner = (module, callback, event) => {
   })
 
   try {
-    return callback(...event.arguments)
+    return Sentry.runWithAsyncContext(() => callback(...event.arguments))
   } finally {
     Sentry.configureScope((scope) => {
       scope.setTag('module', undefined)

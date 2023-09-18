@@ -144,7 +144,7 @@ export const logging = new SleetModule(
       ].join(', ')
       djsLogger.info(
         { ...moduleName(), type: 'guild-create', guildId: guild.id },
-        `Joined guild (${info})`,
+        `Guild create (${info})`,
       )
     },
     guildDelete(guild) {
@@ -156,28 +156,41 @@ export const logging = new SleetModule(
       ].join(', ')
       djsLogger.info(
         { ...moduleName(), type: 'guild-delete', guildId: guild.id },
-        `Left guild (${info})`,
+        `Guild delete (${info})`,
       )
     },
 
-    sleetError(error) {
-      eventLogger.error({ ...moduleName(), type: 'sleet-error', error }, error)
-    },
-    sleetWarn(warning) {
-      eventLogger.warn({ ...moduleName(), type: 'sleet-warn' }, warning)
-    },
-    sleetDebug(debug) {
-      eventLogger.debug({ ...moduleName(), type: 'sleet-debug' }, debug)
-    },
-    applicationInteractionError(_module, _interaction, error) {
+    sleetError(message, error) {
       eventLogger.error(
-        { ...moduleName(), type: 'interaction-error', error },
+        { ...moduleName(), type: 'sleet-error', error, message },
         error instanceof Error ? error.message : String(error),
       )
     },
-    autocompleteInteractionError(_module, _interaction, error) {
+    sleetWarn(warning, data) {
+      eventLogger.warn({ ...moduleName(), type: 'sleet-warn', data }, warning)
+    },
+    sleetDebug(debug, data) {
+      eventLogger.debug({ ...moduleName(), type: 'sleet-debug', data }, debug)
+    },
+    applicationInteractionError(module, interaction, error) {
       eventLogger.error(
-        { ...moduleName(), type: 'autocomplete-error', error },
+        {
+          name: module.name,
+          commandName: interaction.commandName,
+          type: 'interaction-error',
+          error,
+        },
+        error instanceof Error ? error.message : String(error),
+      )
+    },
+    autocompleteInteractionError(module, interaction, error) {
+      eventLogger.error(
+        {
+          name: module.name,
+          commandName: interaction.commandName,
+          type: 'autocomplete-error',
+          error,
+        },
         error instanceof Error ? error.message : String(error),
       )
     },

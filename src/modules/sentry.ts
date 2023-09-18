@@ -87,38 +87,48 @@ export const sentryLogger = new SleetModule(
   },
   {
     // discord.js error
-    error: (error) =>
-      void Sentry.captureException(error, {
+    error(error) {
+      Sentry.captureException(error, {
         tags: {
           ...moduleName(),
           type: 'discord.js-error',
         },
-      }),
-    sleetError: (error) =>
-      void Sentry.captureException(error, {
+      })
+    },
+    sleetError(message, error) {
+      Sentry.captureException(error, {
         tags: {
           ...moduleName(),
           type: 'sleet-error',
         },
-      }),
+        extra: {
+          message,
+        },
+      })
+    },
 
     // discord.js warning
-    warn: (message) =>
-      void Sentry.captureMessage(message, {
+    warn(message) {
+      Sentry.captureMessage(message, {
         level: 'warning',
         tags: {
           ...moduleName(),
           type: 'discord.js-warning',
         },
-      }),
-    sleetWarn: (message) =>
-      void Sentry.captureMessage(message, {
+      })
+    },
+    sleetWarn(message, data) {
+      Sentry.captureMessage(message, {
         level: 'warning',
         tags: {
           ...moduleName(),
           type: 'sleet-warn',
         },
-      }),
+        extra: {
+          data,
+        },
+      })
+    },
 
     autocompleteInteractionError: interactionErrorHandler,
     applicationInteractionError: interactionErrorHandler,
@@ -135,8 +145,9 @@ function interactionErrorHandler(
       interaction: interactionToString(interaction),
     },
     tags: {
+      // I **think** module might be sometimes undefined? Not sure, but just in case until i confirm
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      module: module?.name,
+      moduleName: module?.name,
       type: 'interaction-error',
       commandName: interaction.commandName,
     },

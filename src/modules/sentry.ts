@@ -7,6 +7,7 @@ import {
   ApplicationInteraction,
   ModuleRunner,
   SleetModule,
+  defaultModuleRunner,
   runningModuleStore,
 } from 'sleetcord'
 import { interactionToString } from '../utils/stringify.js'
@@ -61,6 +62,24 @@ export function initSentry(options?: Sentry.NodeOptions) {
   })
 }
 
+/**
+ * Conditionally either return a module runner to run events under a Sentry transaction,
+ * or the default module runner from sleetcord depending on if SENTRY_DSN is defined
+ * as an env var
+ * @returns The module runner to use for the current environment
+ */
+export function getModuleRunner(): ModuleRunner {
+  return SENTRY_DSN ? sentryModuleRunner : defaultModuleRunner
+}
+
+/**
+ * A module runner designed to run every module+event under a Sentry transaction
+ * for error tracing
+ * @param module The module to run
+ * @param callback The callback that runs the module
+ * @param event The event that will be handled by the module
+ * @returns The result of running that module
+ */
 export const sentryModuleRunner: ModuleRunner = (module, callback, event) => {
   const transaction = Sentry.startTransaction({
     name: `${module.name}:${event.name}`,

@@ -1,6 +1,6 @@
 {
   "name": "sleetcord-common",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Common modules/utils for sleetcord bots",
   "type": "module",
   "main": "dist/index.js",
@@ -48,7 +48,7 @@
     "env-var": "^7.4.1",
     "pino": "^8.15.1",
     "pretty-ms": "^8.0.0",
-    "sleetcord": "^0.17.1"
+    "sleetcord": "^0.18.0"
   },
   "devDependencies": {
     "@types/node": "^20.6.2",

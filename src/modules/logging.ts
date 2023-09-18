@@ -234,8 +234,8 @@ export const logging = new SleetModule(
  *   3. The path after the token
  */
 const CENSOR_REGEXES: RegExp[] = [
-  /^(?:https:\/\/discord(?:app)?\.com\/api\/v\d{2})?(\/interactions\/\d{17,19}\/)(.*)(\/callback.*)/,
-  /^(?:https:\/\/discord(?:app)?\.com\/api\/v\d{2})?(\/webhooks\/\d{17,19}\/)(.*)(\/messages.*)/,
+  /^((?:https:\/\/discord(?:app)?\.com\/api\/v\d{2})?\/interactions\/\d{17,19}\/)(.*)(\/callback.*)/,
+  /^((?:https:\/\/discord(?:app)?\.com\/api\/v\d{2})?\/webhooks\/\d{17,19}\/)(.*)(\/messages.*)/,
 ]
 
 /**

@@ -30,8 +30,8 @@ dependencies:
     specifier: ^8.0.0
     version: 8.0.0
   sleetcord:
-    specifier: ^1.0.0
-    version: 1.0.0(discord.js@14.13.0)
+    specifier: ^1.1.0
+    version: 1.1.0(discord.js@14.13.0)
 
 devDependencies:
   '@types/node':
@@ -2842,8 +2842,8 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /sleetcord@1.0.0(discord.js@14.13.0):
-    resolution: {integrity: sha512-U+UiHK0TQGhDbdFDV42sdOONpr3actNIdwE7qYzh7TSfSlhmmXmnPr+EYTfk7j1w8iuD2sffH6wViozBlgHv1Q==}
+  /sleetcord@1.1.0(discord.js@14.13.0):
+    resolution: {integrity: sha512-zAqGhyv+ry+MswXKR66jev5+JjyjsYem6J8M1lbKrJzh6JSMBoDj/AaBKu8/YbtNV2np//a0OqMzMl5YLmC3sA==}
     peerDependencies:
       discord.js: ^14.12.1
     dependencies:

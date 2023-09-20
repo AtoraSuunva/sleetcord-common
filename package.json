@@ -1,6 +1,6 @@
 {
   "name": "sleetcord-common",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Common modules/utils for sleetcord bots",
   "type": "module",
   "main": "dist/index.js",
@@ -25,7 +25,6 @@
     "build": "tsup",
     "lint": "eslint src/ && prettier --check src/ && tsc --noEmit",
     "lint:fix": "eslint src/ --fix && prettier --write src/ && tsc --noEmit",
-    "start:dev": "node --loader ts-node/esm -r dotenv/config test/index.ts",
     "prepublishOnly": "pnpm run lint && pnpm run build"
   },
   "repository": {
@@ -39,7 +38,7 @@
     "url": "https://github.com/AtoraSuunva/sleetcord-common/issues"
   },
   "homepage": "https://github.com/AtoraSuunva/sleetcord-common#readme",
-  "peerDependencies": {
+  "dependencies": {
     "@prisma/client": "^5.3.1",
     "@sentry/integrations": "^7.70.0",
     "@sentry/node": "^7.70.0",
@@ -48,7 +47,7 @@
     "env-var": "^7.4.1",
     "pino": "^8.15.1",
     "pretty-ms": "^8.0.0",
-    "sleetcord": "^1.0.0"
+    "sleetcord": "^1.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.6.3",

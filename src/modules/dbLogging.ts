@@ -1,9 +1,13 @@
 import { runningModuleStore } from 'sleetcord'
 import { LoggerOptions } from 'pino'
 import env from 'env-var'
-import { Client } from '@prisma/client/runtime/library.js'
+import { getPrismaClient } from '@prisma/client/runtime/library.js'
 import { LOG_LEVEL, baseLogger } from './logging.js'
 import { Sentry } from './sentry.js'
+
+type Client = ReturnType<typeof getPrismaClient> extends new () => infer T
+  ? T
+  : never
 
 const USE_PINO_PRETTY = env.get('USE_PINO_PRETTY').required().asBool()
 

@@ -21,6 +21,8 @@ const SENTRY_DSN = env.get('SENTRY_DSN').asString() ?? ''
 /**
  * Init Sentry, enabling logging
  *
+ * This comes with default settings for Sentry, but you can override any of them by providing options
+ *
  * Requires the Sentry DSN to be set as an env var `SENTRY_DSN`
  * @param options Sentry options
  */
@@ -43,9 +45,9 @@ export function initSentry(options?: Sentry.NodeOptions) {
       }),
     ],
     // Performance Monitoring
-    tracesSampleRate: 1.0,
+    tracesSampleRate: 0.25,
     // Set sampling rate for profiling - this is relative to tracesSampleRate
-    profilesSampleRate: 1.0,
+    profilesSampleRate: 0.5,
     includeLocalVariables: true,
 
     // Censor out tokens from url breadcrumbs, they're not very useful
@@ -87,6 +89,7 @@ export const sentryModuleRunner: ModuleRunner = (module, callback, event) => {
   })
 
   Sentry.configureScope((scope) => {
+    scope.clearBreadcrumbs()
     scope.setTag('module', module.name)
   })
 
@@ -94,6 +97,7 @@ export const sentryModuleRunner: ModuleRunner = (module, callback, event) => {
     return Sentry.runWithAsyncContext(() => callback(...event.arguments))
   } finally {
     Sentry.configureScope((scope) => {
+      scope.clearBreadcrumbs()
       scope.setTag('module', undefined)
     })
     transaction.finish()

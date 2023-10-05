@@ -1,8 +1,8 @@
 import * as Sentry from '@sentry/node'
 import { ProfilingIntegration } from '@sentry/profiling-node'
 
-import env from 'env-var'
 import { AutocompleteInteraction } from 'discord.js'
+import env from 'env-var'
 import {
   ApplicationInteraction,
   ModuleRunner,
@@ -26,7 +26,7 @@ const SENTRY_DSN = env.get('SENTRY_DSN').asString() ?? ''
  * Requires the Sentry DSN to be set as an env var `SENTRY_DSN`
  * @param options Sentry options
  */
-export async function initSentry(options?: Sentry.NodeOptions) {
+export function initSentry(options?: Sentry.NodeOptions) {
   if (!SENTRY_DSN) {
     console.warn(
       'SENTRY_DSN not set, not initializing Sentry. Set it to enable Sentry.',
@@ -61,11 +61,6 @@ export async function initSentry(options?: Sentry.NodeOptions) {
 
     // Apply any provided options
     ...options,
-  })
-
-  await Sentry.enableAnrDetection({
-    captureStackTrace: true,
-    debug: NODE_ENV === 'development',
   })
 }
 

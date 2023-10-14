@@ -1,6 +1,6 @@
-import { SleetContext, SleetModule, runningModuleStore } from 'sleetcord'
-import { LoggerOptions, pino as createLogger } from 'pino'
 import env from 'env-var'
+import { LoggerOptions, pino as createLogger } from 'pino'
+import { SleetContext, SleetModule, runningModuleStore } from 'sleetcord'
 import { interactionToString } from '../utils/stringify.js'
 
 const NODE_ENV = env.get('NODE_ENV').required().asString()
@@ -58,13 +58,23 @@ export const logging = new SleetModule(
         }`
 
         const ratelimit = {
-          remaining: res.headers.get('x-ratelimit-remaining'),
           limit: res.headers.get('x-ratelimit-limit'),
+          remaining: res.headers.get('x-ratelimit-remaining'),
           resetAfter: res.headers.get('x-ratelimit-reset-after'),
+          retryAfter: res.headers.get('retry-after'),
+          bucket: res.headers.get('x-ratelimit-bucket'),
+          global: res.headers.get('x-ratelimit-global'),
+          scope: res.headers.get('x-ratelimit-scope'),
         }
 
         const ratelimitLine = ratelimit.remaining
-          ? `[${ratelimit.remaining}/${ratelimit.limit} (${ratelimit.resetAfter}s)]`
+          ? `[${ratelimit.remaining}/${ratelimit.limit} (${
+              ratelimit.resetAfter
+            }s) ${ratelimit.bucket}${
+              ratelimit.scope ? ` ${ratelimit.scope}` : ''
+            }${ratelimit.global ? '!' : ''}${
+              ratelimit.retryAfter ? ` retry in ${ratelimit.retryAfter}s` : ''
+            }]`
           : ''
         let body = ''
 

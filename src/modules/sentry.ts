@@ -1,6 +1,6 @@
+import { Dedupe } from '@sentry/integrations'
 import * as Sentry from '@sentry/node'
 import { ProfilingIntegration } from '@sentry/profiling-node'
-
 import { AutocompleteInteraction } from 'discord.js'
 import env from 'env-var'
 import {
@@ -39,13 +39,15 @@ export function initSentry(options?: Sentry.NodeOptions) {
     environment: NODE_ENV,
     integrations: [
       new ProfilingIntegration(),
+      new Dedupe(),
       new Sentry.Integrations.Undici(),
+      new Sentry.Integrations.Prisma(),
       new Sentry.Integrations.LocalVariables({
         captureAllExceptions: true,
       }),
     ],
     // Performance Monitoring
-    tracesSampleRate: 0.25,
+    tracesSampleRate: 0.2,
     // Set sampling rate for profiling - this is relative to tracesSampleRate
     profilesSampleRate: 0.5,
     includeLocalVariables: true,

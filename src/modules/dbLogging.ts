@@ -1,13 +1,12 @@
-import { runningModuleStore } from 'sleetcord'
-import { LoggerOptions } from 'pino'
-import env from 'env-var'
 import { getPrismaClient } from '@prisma/client/runtime/library.js'
+import env from 'env-var'
+import { LoggerOptions } from 'pino'
+import { runningModuleStore } from 'sleetcord'
 import { LOG_LEVEL, baseLogger } from './logging.js'
 import { Sentry } from './sentry.js'
 
-type Client = ReturnType<typeof getPrismaClient> extends new () => infer T
-  ? T
-  : never
+type Client =
+  ReturnType<typeof getPrismaClient> extends new () => infer T ? T : never
 
 const USE_PINO_PRETTY = env.get('USE_PINO_PRETTY').required().asBool()
 
@@ -33,13 +32,11 @@ type PrismaClient = Pick<Client, '$on'>
  * @param prisma The prisma client to use
  */
 export function initDBLogging(prisma: PrismaClient) {
-  Sentry.getCurrentHub()
-    .getClient()
-    ?.addIntegration?.(
-      new Sentry.Integrations.Prisma({
-        client: prisma,
-      }),
-    )
+  Sentry.addIntegration(
+    new Sentry.Integrations.Prisma({
+      client: prisma,
+    }),
+  )
 
   prisma.$on('query', (e: { duration: number; query: string }) => {
     prismaLogger.debug(

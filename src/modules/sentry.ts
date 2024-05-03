@@ -1,6 +1,5 @@
-import { Dedupe } from '@sentry/integrations'
 import * as Sentry from '@sentry/node'
-import { ProfilingIntegration } from '@sentry/profiling-node'
+import { nodeProfilingIntegration } from '@sentry/profiling-node'
 import { AutocompleteInteraction } from 'discord.js'
 import env from 'env-var'
 import {
@@ -38,8 +37,8 @@ export function initSentry(options?: Sentry.NodeOptions) {
     dsn: SENTRY_DSN,
     environment: NODE_ENV,
     integrations: [
-      new ProfilingIntegration(),
-      new Dedupe(),
+      nodeProfilingIntegration(),
+      Sentry.dedupeIntegration(),
       new Sentry.Integrations.Undici(),
       new Sentry.Integrations.Prisma(),
       new Sentry.Integrations.LocalVariables({
@@ -67,7 +66,7 @@ export function initSentry(options?: Sentry.NodeOptions) {
 }
 
 /**
- * Conditionally either return a module runner to run events under a Sentry transaction,
+ * Conditionally either return a module runner to run events under a Sentry span,
  * or the default module runner from sleetcord depending on if SENTRY_DSN is defined
  * as an env var
  * @returns The module runner to use for the current environment
@@ -77,7 +76,7 @@ export function getModuleRunner(): ModuleRunner {
 }
 
 /**
- * A module runner designed to run every module+event under a Sentry transaction
+ * A module runner designed to run every module+event under a Sentry span
  * for error tracing
  * @param module The module to run
  * @param callback The callback that runs the module
@@ -85,25 +84,29 @@ export function getModuleRunner(): ModuleRunner {
  * @returns The result of running that module
  */
 export const sentryModuleRunner: ModuleRunner = (module, callback, event) => {
-  const transaction = Sentry.startTransaction({
-    name: `${module.name}:${event.name}`,
-    op: 'module',
-  })
-
-  Sentry.configureScope((scope) => {
-    scope.clearBreadcrumbs()
-    scope.setTag('module', module.name)
-  })
-
-  try {
-    return Sentry.runWithAsyncContext(() => callback(...event.arguments))
-  } finally {
-    Sentry.configureScope((scope) => {
+  Sentry.startSpanManual(
+    {
+      name: `${module.name}:${event.name}`,
+      op: 'module',
+    },
+    (span, finish) => {
+      const scope = Sentry.getCurrentScope()
       scope.clearBreadcrumbs()
-      scope.setTag('module', undefined)
-    })
-    transaction.finish()
-  }
+      scope.setTag('module', module.name)
+
+      try {
+        const res = Sentry.runWithAsyncContext(() =>
+          callback(...event.arguments),
+        )
+        return res
+      } finally {
+        scope.clearBreadcrumbs()
+        scope.setTag('module', undefined)
+        span?.end()
+        finish()
+      }
+    },
+  )
 }
 
 export const sentryLogger = new SleetModule(

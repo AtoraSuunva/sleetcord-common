@@ -78,10 +78,10 @@ async function runInfo(interaction: ChatInputCommandInteraction) {
   embed.addFields([
     { name: 'Owner', value: owner, inline: true },
     { name: 'Using', value: versionInfo, inline: true },
-    { name: '', value: '' },
+    { name: ' ', value: ' ' },
     { name: 'CPU Load Average', value: cpuString, inline: true },
     { name: 'Memory Usage', value: memoryString, inline: true },
-    { name: '', value: '' },
+    { name: ' ', value: ' ' },
     { name: 'Bot Guild', value: botGuildInfo, inline: true },
     { name: 'Approximate Guilds', value: approximateGuildCount, inline: true },
   ])

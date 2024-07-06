@@ -4,7 +4,7 @@ import {
   RateLimitData,
   ResponseLike,
 } from 'discord.js'
-import * as env from 'env-var'
+import env from 'env-var'
 import { LoggerOptions, pino as createLogger } from 'pino'
 import {
   SleetContext,

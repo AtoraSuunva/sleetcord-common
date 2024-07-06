@@ -6,7 +6,7 @@ import {
   ChatInputCommandInteraction,
   Client,
 } from 'discord.js'
-import * as env from 'env-var'
+import env from 'env-var'
 import { readFile } from 'fs/promises'
 import { isOwnerGuard, SleetContext, SleetSlashCommand } from 'sleetcord'
 import { MINUTE } from '../utils/constants.js'

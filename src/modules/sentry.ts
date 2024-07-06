@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/node'
 import { nodeProfilingIntegration } from '@sentry/profiling-node'
 import { AutocompleteInteraction } from 'discord.js'
-import * as env from 'env-var'
+import env from 'env-var'
 import {
   ApplicationInteraction,
   ModuleRunner,

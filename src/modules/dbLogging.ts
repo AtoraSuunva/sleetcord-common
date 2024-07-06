@@ -1,6 +1,6 @@
 import { getPrismaClient } from '@prisma/client/runtime/library.js'
 import { prismaIntegration } from '@sentry/node'
-import * as env from 'env-var'
+import env from 'env-var'
 import { LoggerOptions } from 'pino'
 import { runningModuleStore } from 'sleetcord'
 import { LOG_LEVEL, baseLogger } from './logging.js'

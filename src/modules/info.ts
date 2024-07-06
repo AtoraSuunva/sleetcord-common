@@ -34,8 +34,6 @@ export const info = new SleetSlashCommand(
 /** os.loadavg() "Returns an array containing the 1, 5, and 15 minute load averages." */
 const cpuLoadIntervals = [1, 5, 15]
 
-const ZWSP = '\u200B'
-
 let CACHED_INVITE: Invite | null = null
 
 async function runInfo(interaction: ChatInputCommandInteraction) {
@@ -80,10 +78,10 @@ async function runInfo(interaction: ChatInputCommandInteraction) {
   embed.addFields([
     { name: 'Owner', value: owner, inline: true },
     { name: 'Using', value: versionInfo, inline: true },
-    { name: ZWSP, value: ZWSP },
+    { name: '', value: '' },
     { name: 'CPU Load Average', value: cpuString, inline: true },
     { name: 'Memory Usage', value: memoryString, inline: true },
-    { name: ZWSP, value: ZWSP },
+    { name: '', value: '' },
     { name: 'Bot Guild', value: botGuildInfo, inline: true },
     { name: 'Approximate Guilds', value: approximateGuildCount, inline: true },
   ])

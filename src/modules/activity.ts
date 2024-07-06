@@ -6,10 +6,10 @@ import {
   ChatInputCommandInteraction,
   Client,
 } from 'discord.js'
+import * as env from 'env-var'
+import { readFile } from 'fs/promises'
 import { isOwnerGuard, SleetContext, SleetSlashCommand } from 'sleetcord'
 import { MINUTE } from '../utils/constants.js'
-import { readFile } from 'fs/promises'
-import env from 'env-var'
 
 /** Holds the timeout that we use to periodically change the activity */
 let timeout: NodeJS.Timeout

@@ -8,8 +8,8 @@ import {
   User,
   version as discordJSVersion,
 } from 'discord.js'
-import { SleetSlashCommand, formatUser } from 'sleetcord'
 import * as os from 'node:os'
+import { SleetSlashCommand, formatUser } from 'sleetcord'
 import { notNullish } from '../utils/functions.js'
 
 /**
@@ -34,19 +34,14 @@ export const info = new SleetSlashCommand(
 /** os.loadavg() "Returns an array containing the 1, 5, and 15 minute load averages." */
 const cpuLoadIntervals = [1, 5, 15]
 
+const ZWSP = '\u200B'
+
 let CACHED_INVITE: Invite | null = null
 
 async function runInfo(interaction: ChatInputCommandInteraction) {
   const { client } = interaction
 
   const embed = new EmbedBuilder()
-    .setAuthor({
-      name: formatUser(client.user, {
-        markdown: false,
-        escape: false,
-      }),
-    })
-    .setThumbnail(client.user.displayAvatarURL())
 
   const owner = formatOwner(client)
   const versionInfo = `Node ${process.version}\ndiscord.js v${discordJSVersion}`
@@ -85,11 +80,22 @@ async function runInfo(interaction: ChatInputCommandInteraction) {
   embed.addFields([
     { name: 'Owner', value: owner, inline: true },
     { name: 'Using', value: versionInfo, inline: true },
-    { name: 'CPU Load Average', value: cpuString, inline: false },
+    { name: ZWSP, value: ZWSP },
+    { name: 'CPU Load Average', value: cpuString, inline: true },
     { name: 'Memory Usage', value: memoryString, inline: true },
+    { name: ZWSP, value: ZWSP },
     { name: 'Bot Guild', value: botGuildInfo, inline: true },
     { name: 'Approximate Guilds', value: approximateGuildCount, inline: true },
   ])
+
+  if (client.shard) {
+    embed.addFields([
+      {
+        name: 'Shard',
+        value: `IDs: ${client.shard.ids.join(', ')} (${client.shard.count} total)`,
+      },
+    ])
+  }
 
   await interaction.reply({
     embeds: [embed],

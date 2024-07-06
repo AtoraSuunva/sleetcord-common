@@ -1,6 +1,17 @@
-import env from 'env-var'
+import {
+  APIRequest,
+  InvalidRequestWarningData,
+  RateLimitData,
+  ResponseLike,
+} from 'discord.js'
+import * as env from 'env-var'
 import { LoggerOptions, pino as createLogger } from 'pino'
-import { SleetContext, SleetModule, runningModuleStore } from 'sleetcord'
+import {
+  SleetContext,
+  SleetModule,
+  formatUser,
+  runningModuleStore,
+} from 'sleetcord'
 import { interactionToString } from '../utils/stringify.js'
 
 const NODE_ENV = env.get('NODE_ENV').required().asString()
@@ -30,78 +41,27 @@ export const logging = new SleetModule(
     name: 'logging',
   },
   {
-    ready(this: SleetContext) {
-      this.client.rest.on('invalidRequestWarning', (invalidRequestInfo) => {
-        djsLogger.warn(
-          { ...moduleName(), type: 'invalid-request' },
-          'Invalid Request Warning: %o',
-          invalidRequestInfo,
-        )
-      })
-      this.client.rest.on('rateLimited', (rateLimitInfo) => {
-        djsLogger.warn(
-          { ...moduleName(), type: 'ratelimit' },
-          'Ratelimited: %o',
-          rateLimitInfo,
-        )
-      })
-      this.client.rest.on('response', (req, res) => {
-        if (!(res instanceof Response)) {
-          djsLogger.warn(
-            "Response is not a Response object, set `makeRequest: fetch` in your rest client options. You might need `makeRequest: fetch as unknown as RESTOptions['makeRequest'],` for it to work nicely.",
-          )
-          return
-        }
+    ready(client) {
+      const { application, shard, readyAt } = client
+      eventLogger.info(`Ready at   : ${readyAt.toISOString()}`)
+      eventLogger.info(`Logged in  : ${formatUser(client.user)}`)
+      eventLogger.info(`Guild Count: ${application.approximateGuildCount}`)
 
-        const path = `${req.method} ${censorPath(req.path)} ${res.status} ${
-          res.statusText
-        }`
+      if (shard) {
+        eventLogger.info(`Shard Count: ${shard.count}`)
+      }
 
-        const ratelimit = {
-          limit: res.headers.get('x-ratelimit-limit'),
-          remaining: res.headers.get('x-ratelimit-remaining'),
-          resetAfter: res.headers.get('x-ratelimit-reset-after'),
-          retryAfter: res.headers.get('retry-after'),
-          bucket: res.headers.get('x-ratelimit-bucket'),
-          global: res.headers.get('x-ratelimit-global'),
-          scope: res.headers.get('x-ratelimit-scope'),
-        }
-
-        const ratelimitLine = ratelimit.remaining
-          ? `[${ratelimit.remaining}/${ratelimit.limit} (${
-              ratelimit.resetAfter
-            }s) ${ratelimit.bucket}${
-              ratelimit.scope ? ` ${ratelimit.scope}` : ''
-            }${ratelimit.global ? '!' : ''}${
-              ratelimit.retryAfter ? ` retry in ${ratelimit.retryAfter}s` : ''
-            }]`
-          : ''
-        let body = ''
-
-        if (res.status >= 400) {
-          const bodyBuilder = []
-
-          if (req.method !== 'GET') {
-            bodyBuilder.push('\nRequest:\n')
-            bodyBuilder.push(JSON.stringify(req.data.body, null, 2))
-            if (!res.bodyUsed && res.body !== null && !res.body.locked) {
-              bodyBuilder.push('\nResponse:\n')
-              bodyBuilder.push(JSON.stringify(res.clone().body, null, 2))
-            }
-          }
-
-          body = bodyBuilder.join('')
-        }
-
-        djsLogger.debug(
-          {
-            ...moduleName(),
-            type: 'rest',
-          },
-          `${path} ${ratelimitLine}${body}`,
-        )
-      })
       djsLogger.info({ djsName, type: 'client-ready' }, 'Client is ready!')
+    },
+    load(this: SleetContext) {
+      this.client.rest.on('invalidRequestWarning', onInvalidRequestWarning)
+      this.client.rest.on('rateLimited', onRateLimited)
+      this.client.rest.on('response', onResponse)
+    },
+    unload(this: SleetContext) {
+      this.client.rest.off('invalidRequestWarning', onInvalidRequestWarning)
+      this.client.rest.off('rateLimited', onRateLimited)
+      this.client.rest.off('response', onResponse)
     },
     error(error) {
       djsLogger.error({ ...moduleName(), error, type: 'djs-error' })
@@ -288,4 +248,79 @@ function moduleName(): { name: string } | undefined {
     return { name: module.name }
   }
   return
+}
+
+function onInvalidRequestWarning(
+  invalidRequestInfo: InvalidRequestWarningData,
+) {
+  djsLogger.warn(
+    { ...moduleName(), type: 'invalid-request' },
+    'Invalid Request Warning: %o',
+    invalidRequestInfo,
+  )
+}
+
+function onRateLimited(rateLimitInfo: RateLimitData) {
+  djsLogger.warn(
+    { ...moduleName(), type: 'ratelimit' },
+    'Ratelimited: %o',
+    rateLimitInfo,
+  )
+}
+
+function onResponse(req: APIRequest, res: ResponseLike) {
+  if (!(res instanceof Response)) {
+    djsLogger.warn(
+      "Response is not a Response object, set `makeRequest: fetch` in your rest client options. You might need `makeRequest: fetch as unknown as RESTOptions['makeRequest'],` for it to work nicely.",
+    )
+    return
+  }
+
+  const path = `${req.method} ${censorPath(req.path)} ${res.status} ${
+    res.statusText
+  }`
+
+  const ratelimit = {
+    limit: res.headers.get('x-ratelimit-limit'),
+    remaining: res.headers.get('x-ratelimit-remaining'),
+    resetAfter: res.headers.get('x-ratelimit-reset-after'),
+    retryAfter: res.headers.get('retry-after'),
+    bucket: res.headers.get('x-ratelimit-bucket'),
+    global: res.headers.get('x-ratelimit-global'),
+    scope: res.headers.get('x-ratelimit-scope'),
+  }
+
+  const ratelimitLine = ratelimit.remaining
+    ? `[${ratelimit.remaining}/${ratelimit.limit} (${
+        ratelimit.resetAfter
+      }s) ${ratelimit.bucket}${
+        ratelimit.scope ? ` ${ratelimit.scope}` : ''
+      }${ratelimit.global ? '!' : ''}${
+        ratelimit.retryAfter ? ` retry in ${ratelimit.retryAfter}s` : ''
+      }]`
+    : ''
+  let body = ''
+
+  if (res.status >= 400) {
+    const bodyBuilder = []
+
+    if (req.method !== 'GET') {
+      bodyBuilder.push('\nRequest:\n')
+      bodyBuilder.push(JSON.stringify(req.data.body, null, 2))
+      if (!res.bodyUsed && res.body !== null && !res.body.locked) {
+        bodyBuilder.push('\nResponse:\n')
+        bodyBuilder.push(JSON.stringify(res.clone().body, null, 2))
+      }
+    }
+
+    body = bodyBuilder.join('')
+  }
+
+  djsLogger.debug(
+    {
+      ...moduleName(),
+      type: 'rest',
+    },
+    `${path} ${ratelimitLine}${body}`,
+  )
 }

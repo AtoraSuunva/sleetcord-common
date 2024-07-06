@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/node'
 import { nodeProfilingIntegration } from '@sentry/profiling-node'
 import { AutocompleteInteraction } from 'discord.js'
-import env from 'env-var'
+import * as env from 'env-var'
 import {
   ApplicationInteraction,
   ModuleRunner,
@@ -39,14 +39,13 @@ export function initSentry(options?: Sentry.NodeOptions) {
     integrations: [
       nodeProfilingIntegration(),
       Sentry.dedupeIntegration(),
-      new Sentry.Integrations.Undici(),
-      new Sentry.Integrations.Prisma(),
-      new Sentry.Integrations.LocalVariables({
+      Sentry.localVariablesIntegration({
         captureAllExceptions: true,
+        maxExceptionsPerSecond: 5,
       }),
     ],
     // Performance Monitoring
-    tracesSampleRate: 0.2,
+    tracesSampleRate: 0.1,
     // Set sampling rate for profiling - this is relative to tracesSampleRate
     profilesSampleRate: 0.5,
     includeLocalVariables: true,
@@ -95,14 +94,14 @@ export const sentryModuleRunner: ModuleRunner = (module, callback, event) => {
       scope.setTag('module', module.name)
 
       try {
-        const res = Sentry.runWithAsyncContext(() =>
+        const res = Sentry.withIsolationScope(() =>
           callback(...event.arguments),
         )
         return res
       } finally {
         scope.clearBreadcrumbs()
         scope.setTag('module', undefined)
-        span?.end()
+        span.end()
         finish()
       }
     },

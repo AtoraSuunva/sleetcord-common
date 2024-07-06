@@ -1,12 +1,12 @@
 import {
-  Client,
-  Guild,
-  EmbedBuilder,
   ChatInputCommandInteraction,
+  Client,
+  EmbedBuilder,
+  Guild,
   time,
 } from 'discord.js'
 import prettyMilliseconds from 'pretty-ms'
-import { SleetSlashCommand, SleetContext, formatUser } from 'sleetcord'
+import { SleetContext, SleetSlashCommand } from 'sleetcord'
 
 /**
  * Get some stats about the bot, for now this includes:
@@ -50,30 +50,24 @@ async function runStats(
   const uptime = client.readyAt
   const created = client.user.createdAt
 
-  const embed = new EmbedBuilder()
-    .setTitle('Stats')
-    .addFields([
-      { name: 'Guilds:', value: guildCount.toLocaleString(), inline: true },
-      { name: 'Members:', value: memberCount.toLocaleString(), inline: true },
-      {
-        name: 'Users Cached:',
-        value: userCount.toLocaleString(),
-        inline: true,
-      },
-      { name: 'Channels:', value: channelCount.toLocaleString(), inline: true },
-      { name: 'Emojis Cached:', value: emojis.toLocaleString(), inline: true },
-      {
-        name: 'Modules Loaded:',
-        value: modules.toLocaleString(),
-        inline: true,
-      },
-      { name: 'Uptime:', value: createTimestamps(uptime), inline: true },
-      { name: 'Created:', value: createTimestamps(created), inline: true },
-    ])
-    .setAuthor({
-      name: formatUser(client.user, { markdown: false, escape: false }),
-    })
-    .setThumbnail(client.user.displayAvatarURL())
+  const embed = new EmbedBuilder().addFields([
+    { name: 'Guilds:', value: guildCount.toLocaleString(), inline: true },
+    { name: 'Members:', value: memberCount.toLocaleString(), inline: true },
+    {
+      name: 'Users Cached:',
+      value: userCount.toLocaleString(),
+      inline: true,
+    },
+    { name: 'Channels:', value: channelCount.toLocaleString(), inline: true },
+    { name: 'Emojis Cached:', value: emojis.toLocaleString(), inline: true },
+    {
+      name: 'Modules Loaded:',
+      value: modules.toLocaleString(),
+      inline: true,
+    },
+    { name: 'Uptime:', value: createTimestamps(uptime), inline: true },
+    { name: 'Created:', value: createTimestamps(created), inline: true },
+  ])
 
   await interaction.reply({ embeds: [embed] })
 }

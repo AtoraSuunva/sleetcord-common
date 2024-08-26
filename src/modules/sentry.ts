@@ -1,10 +1,10 @@
 import * as Sentry from '@sentry/node'
 import { nodeProfilingIntegration } from '@sentry/profiling-node'
-import { AutocompleteInteraction } from 'discord.js'
+import type { AutocompleteInteraction } from 'discord.js'
 import env from 'env-var'
 import {
-  ApplicationInteraction,
-  ModuleRunner,
+  type ApplicationInteraction,
+  type ModuleRunner,
   SleetModule,
   defaultModuleRunner,
   runningModuleStore,

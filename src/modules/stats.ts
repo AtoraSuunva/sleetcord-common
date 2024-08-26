@@ -1,12 +1,12 @@
 import {
-  ChatInputCommandInteraction,
-  Client,
+  type ChatInputCommandInteraction,
+  type Client,
   EmbedBuilder,
-  Guild,
+  type Guild,
   time,
 } from 'discord.js'
 import prettyMilliseconds from 'pretty-ms'
-import { SleetContext, SleetSlashCommand } from 'sleetcord'
+import { type SleetContext, SleetSlashCommand } from 'sleetcord'
 
 /**
  * Get some stats about the bot, for now this includes:
@@ -96,9 +96,9 @@ async function getCount(
 ): Promise<number> {
   if (client.shard) {
     return client.shard.broadcastEval(getClientCount).then(sum)
-  } else {
-    return getClientCount(client)
   }
+
+  return getClientCount(client)
 }
 
 async function getGuildCount(client: Client): Promise<number> {

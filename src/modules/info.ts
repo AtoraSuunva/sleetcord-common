@@ -1,14 +1,14 @@
+import * as os from 'node:os'
 import {
-  ChatInputCommandInteraction,
-  Client,
+  type ChatInputCommandInteraction,
+  type Client,
   EmbedBuilder,
-  Guild,
-  Invite,
+  type Guild,
+  type Invite,
   Team,
   User,
   version as discordJSVersion,
 } from 'discord.js'
-import * as os from 'node:os'
 import { SleetSlashCommand, formatUser } from 'sleetcord'
 import { notNullish } from '../utils/functions.js'
 
@@ -100,6 +100,9 @@ async function runInfo(interaction: ChatInputCommandInteraction) {
   })
 }
 
+const k = 1000
+const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+
 /**
  * Formats a number of bytes into a format like `512.00 MB`, using the "best-fit" unit size
  * @param bytes The bytes to format
@@ -108,11 +111,8 @@ async function runInfo(interaction: ChatInputCommandInteraction) {
  */
 function formatBytes(bytes: number, decimals = 2): string {
   if (bytes === 0) return '0 B'
-  const k = 1000,
-    dm = decimals + 1 || 3,
-    sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
-    i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return `${Number.parseFloat((bytes / k ** i).toFixed(decimals + 1))} ${sizes[i]}`
 }
 
 /**
@@ -125,13 +125,15 @@ function formatOwner(client: Client<true>): string {
 
   if (owner instanceof User) {
     return formatUser(owner)
-  } else if (owner instanceof Team) {
+  }
+
+  if (owner instanceof Team) {
     return `Team: ${owner.name} (Owned by ${
       owner.owner ? formatUser(owner.owner.user) : '<Unknown>'
     })`
-  } else {
-    return '<Unknown>'
   }
+
+  return '<Unknown>'
 }
 
 async function ensureInviteFor(
@@ -152,12 +154,14 @@ async function ensureInviteFor(
     }
 
     if ('createInvite' in firstChannel) {
-      cachedInvite = CACHED_INVITE = await firstChannel.createInvite({
+      CACHED_INVITE = await firstChannel.createInvite({
         maxAge: 0,
         maxUses: 0,
         temporary: false,
         unique: false,
       })
+
+      return CACHED_INVITE
     }
   }
 

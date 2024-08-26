@@ -1,13 +1,13 @@
-import {
+import type {
   APIRequest,
   InvalidRequestWarningData,
   RateLimitData,
   ResponseLike,
 } from 'discord.js'
 import env from 'env-var'
-import { LoggerOptions, pino as createLogger } from 'pino'
+import { type LoggerOptions, pino as createLogger } from 'pino'
 import {
-  SleetContext,
+  type SleetContext,
   SleetModule,
   formatUser,
   runningModuleStore,
@@ -230,10 +230,13 @@ const CENSOR_REGEXES: RegExp[] = [
  * @returns The censored path
  */
 export function censorPath(path: string): string {
+  let newPath = path
+
   for (const regex of CENSOR_REGEXES) {
-    path = path.replace(regex, '$1:token$3')
+    newPath = newPath.replace(regex, '$1:token$3')
   }
-  return path
+
+  return newPath
 }
 
 /**

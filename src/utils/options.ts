@@ -1,7 +1,7 @@
 import {
   ApplicationCommandOptionType,
-  CommandInteraction,
-  CommandInteractionOption,
+  type CommandInteraction,
+  type CommandInteractionOption,
 } from 'discord.js'
 
 /**

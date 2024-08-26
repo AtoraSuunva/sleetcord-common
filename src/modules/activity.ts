@@ -1,14 +1,14 @@
+import { readFile } from 'node:fs/promises'
 import {
-  ActivityOptions,
+  type APIApplicationCommandOptionChoice,
+  type ActivityOptions,
   ActivityType,
-  APIApplicationCommandOptionChoice,
   ApplicationCommandOptionType,
-  ChatInputCommandInteraction,
-  Client,
+  type ChatInputCommandInteraction,
+  type Client,
 } from 'discord.js'
 import env from 'env-var'
-import { readFile } from 'fs/promises'
-import { isOwnerGuard, SleetContext, SleetSlashCommand } from 'sleetcord'
+import { type SleetContext, SleetSlashCommand, isOwnerGuard } from 'sleetcord'
 import { MINUTE } from '../utils/constants.js'
 
 /** Holds the timeout that we use to periodically change the activity */

@@ -2,8 +2,8 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ClientUser,
-  Message,
+  type ClientUser,
+  type Message,
   OAuth2Scopes,
 } from 'discord.js'
 import { SleetModule } from 'sleetcord'
@@ -60,7 +60,8 @@ export function makeAutoreplyModule({
   }
 
   function lazyInitClientUserRegex(user: ClientUser): RegExp {
-    return (clientUserRegex ??= new RegExp(`^<@!?${user.id}>$`))
+    clientUserRegex ??= new RegExp(`^<@!?${user.id}>$`)
+    return clientUserRegex
   }
 
   return new SleetModule(

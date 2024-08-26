@@ -1,7 +1,7 @@
 import {
   ApplicationCommandOptionType,
-  CommandInteractionOption,
-  Interaction,
+  type CommandInteractionOption,
+  type Interaction,
 } from 'discord.js'
 
 const optionTypeToString: Record<ApplicationCommandOptionType, string> = {
@@ -75,7 +75,7 @@ export function interactionToString(interaction: Interaction): string {
     return `[ModalSubmit] (${interaction.customId}) ${opts.join(' ')}`
   }
 
-  return `[Unknown interaction type]`
+  return '[Unknown interaction type]'
 }
 
 function stringifyOption(opt: CommandInteractionOption): string {

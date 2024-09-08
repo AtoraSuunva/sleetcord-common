@@ -1,6 +1,6 @@
 {
   "name": "sleetcord-common",
-  "version": "9.0.1",
+  "version": "9.1.0",
   "description": "Common modules/utils for sleetcord bots",
   "type": "module",
   "main": "dist/index.js",

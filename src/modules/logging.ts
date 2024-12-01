@@ -19,7 +19,7 @@ const USE_PINO_PRETTY = env.get('USE_PINO_PRETTY').required().asBool()
 const LOG_LEVEL_ENV = env.get('LOG_LEVEL').asString()
 
 export const LOG_LEVEL =
-  LOG_LEVEL_ENV ?? NODE_ENV === 'development' ? 'debug' : 'info'
+  (LOG_LEVEL_ENV ?? NODE_ENV === 'development') ? 'debug' : 'info'
 
 const loggerOptions: LoggerOptions = {
   level: LOG_LEVEL,

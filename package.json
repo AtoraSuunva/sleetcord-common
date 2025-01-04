@@ -1,6 +1,6 @@
 {
   "name": "sleetcord-common",
-  "version": "10.0.1",
+  "version": "10.0.2",
   "description": "Common modules/utils for sleetcord bots",
   "type": "module",
   "main": "dist/index.js",
@@ -39,7 +39,7 @@
   },
   "homepage": "https://github.com/AtoraSuunva/sleetcord-common#readme",
   "dependencies": {
-    "@prisma/client": "^6.1.0",
+    "@prisma/client": "^6.0.1",
     "@sentry/integrations": "^7.114.0",
     "@sentry/node": "^8.47.0",
     "@sentry/profiling-node": "^8.47.0",

@@ -1,6 +1,6 @@
 {
   "name": "sleetcord-common",
-  "version": "11.1.0",
+  "version": "11.1.1",
   "description": "Common modules/utils for sleetcord bots",
   "type": "module",
   "main": "dist/index.js",
@@ -47,8 +47,8 @@
     "pretty-ms": "^9.2.0"
   },
   "peerDependencies": {
-    "@prisma/instrumentation": "^6.2.1",
     "@prisma/client": "^6.2.1",
+    "@prisma/instrumentation": "^6.2.1",
     "discord.js": "^14.17.2",
     "sleetcord": "^2.3.0"
   },

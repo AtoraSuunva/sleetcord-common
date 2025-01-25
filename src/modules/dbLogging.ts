@@ -1,11 +1,18 @@
 import type { getPrismaClient } from '@prisma/client/runtime/library.js'
-import { PrismaInstrumentation } from '@prisma/instrumentation'
+import prismaInstrumentation from '@prisma/instrumentation'
 import { prismaIntegration } from '@sentry/node'
 import env from 'env-var'
 import type { LoggerOptions } from 'pino'
 import { runningModuleStore } from 'sleetcord'
 import { LOG_LEVEL, baseLogger } from './logging.js'
 import { Sentry } from './sentry.js'
+
+// We need this roundabout way of importing PrismaInstrumentation because the types are wrong (it's CJS with incorrect named exports)
+// See: https://github.com/prisma/prisma/issues/23410
+// See: https://arethetypeswrong.github.io/?p=@prisma/instrumentation@6.2.1
+// > TypeScript allows ESM named imports of the properties of this CommonJS module, but they will crash at runtime because they don’t
+// > exist or can’t be statically detected by Node.js in the JavaScript file.
+const { PrismaInstrumentation } = prismaInstrumentation
 
 type Client = ReturnType<typeof getPrismaClient> extends new () => infer T
   ? T

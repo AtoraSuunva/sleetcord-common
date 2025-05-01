@@ -1,0 +1,4 @@
+onlyBuiltDependencies:
+  - '@prisma/client'
+  - '@sentry-internal/node-cpu-profiler'
+  - esbuild

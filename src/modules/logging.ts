@@ -43,12 +43,14 @@ export const logging = new SleetModule(
   {
     ready(client) {
       const { application, shard, readyAt } = client
-      eventLogger.info(`Ready at   : ${readyAt.toISOString()}`)
-      eventLogger.info(`Logged in  : ${formatUser(client.user)}`)
-      eventLogger.info(`Guild Count: ${application.approximateGuildCount}`)
+      eventLogger.info(`Ready at    : ${readyAt.toISOString()}`)
+      eventLogger.info(
+        `Logged in   : ${formatUser(client.user, { markdown: false })}`,
+      )
+      eventLogger.info(`Guild Approx: ${application.approximateGuildCount}`)
 
       if (shard) {
-        eventLogger.info(`Shard Count: ${shard.count}`)
+        eventLogger.info(`Shard Count : ${shard.count}`)
       }
 
       djsLogger.info({ djsName, type: 'client-ready' }, 'Client is ready!')
@@ -218,7 +220,7 @@ export const logging = new SleetModule(
  */
 const CENSOR_REGEXES: RegExp[] = [
   /^((?:https:\/\/discord(?:app)?\.com\/api\/v\d{2})?\/interactions\/\d{17,19}\/)(.*)(\/callback.*)/,
-  /^((?:https:\/\/discord(?:app)?\.com\/api\/v\d{2})?\/webhooks\/\d{17,19}\/)(.*)(\/messages.*)/,
+  /^((?:https:\/\/discord(?:app)?\.com\/api\/v\d{2})?\/webhooks\/\d{17,19}\/)(.*)(\/messages.*|$)/,
 ]
 
 /**

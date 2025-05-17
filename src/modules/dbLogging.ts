@@ -33,10 +33,12 @@ type PrismaClient = Pick<Client, '$on'>
  * @param prisma The prisma client to use
  */
 export function initDBLogging(prisma: PrismaClient) {
-  prisma.$on('query', (e: { duration: number; query: string }) => {
+  prisma.$on('query', (e) => {
+    const fixedDuration = e.duration.toFixed(4)
+
     prismaLogger.debug(
       { ...moduleName(), type: 'query', duration: e.duration },
-      `${e.query}; (Took ${e.duration}ms)`,
+      `${e.query}; (Took ${fixedDuration}ms)`,
     )
 
     if (e.duration > QUERY_TOO_LONG_WARNING) {
@@ -45,7 +47,7 @@ export function initDBLogging(prisma: PrismaClient) {
         type: 'query-too-long',
         duration: e.duration,
       }
-      const message = `${e.query}; (Took too long ${e.duration}ms)`
+      const message = `${e.query}; (Took too long ${fixedDuration}ms)`
 
       prismaLogger.warn(context, message)
       Sentry.captureMessage(message, {

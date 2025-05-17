@@ -1,6 +1,4 @@
 import type { getPrismaClient } from '@prisma/client/runtime/library.js'
-import { PrismaInstrumentation } from '@prisma/instrumentation'
-import { prismaIntegration } from '@sentry/node'
 import env from 'env-var'
 import type { LoggerOptions } from 'pino'
 import { runningModuleStore } from 'sleetcord'
@@ -35,14 +33,6 @@ type PrismaClient = Pick<Client, '$on'>
  * @param prisma The prisma client to use
  */
 export function initDBLogging(prisma: PrismaClient) {
-  Sentry.addIntegration(
-    prismaIntegration({
-      // Required for Prisma v6
-      // See: https://docs.sentry.io/platforms/javascript/guides/node/configuration/integrations/prisma/
-      prismaInstrumentation: new PrismaInstrumentation(),
-    }),
-  )
-
   prisma.$on('query', (e: { duration: number; query: string }) => {
     prismaLogger.debug(
       { ...moduleName(), type: 'query', duration: e.duration },

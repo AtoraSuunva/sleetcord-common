@@ -1,6 +1,6 @@
 {
   "name": "sleetcord-common",
-  "version": "13.0.0",
+  "version": "14.0.0",
   "description": "Common modules/utils for sleetcord bots",
   "type": "module",
   "main": "dist/index.js",
@@ -40,7 +40,6 @@
   "homepage": "https://github.com/AtoraSuunva/sleetcord-common#readme",
   "dependencies": {
     "@sentry/node": "^9.19.0",
-    "@sentry/profiling-node": "^9.19.0",
     "env-var": "^7.5.0",
     "pino": "^9.6.0",
     "pretty-ms": "^9.2.0"

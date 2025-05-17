@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/node'
-import { nodeProfilingIntegration } from '@sentry/profiling-node'
 import type { AutocompleteInteraction } from 'discord.js'
 import env from 'env-var'
 import {
@@ -37,7 +36,6 @@ export function initSentry(options?: Sentry.NodeOptions) {
     dsn: SENTRY_DSN,
     environment: NODE_ENV,
     integrations: [
-      nodeProfilingIntegration(),
       Sentry.dedupeIntegration(),
       Sentry.localVariablesIntegration({
         captureAllExceptions: true,

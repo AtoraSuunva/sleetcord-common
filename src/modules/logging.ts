@@ -5,12 +5,12 @@ import type {
   ResponseLike,
 } from 'discord.js'
 import env from 'env-var'
-import { type LoggerOptions, pino as createLogger } from 'pino'
+import { pino as createLogger, type LoggerOptions } from 'pino'
 import {
-  type SleetContext,
-  SleetModule,
   formatUser,
   runningModuleStore,
+  type SleetContext,
+  SleetModule,
 } from 'sleetcord'
 import { interactionToString } from '../utils/stringify.js'
 
@@ -41,7 +41,7 @@ export const logging = new SleetModule(
     name: 'logging',
   },
   {
-    ready(client) {
+    clientReady(client) {
       const { application, shard, readyAt } = client
       eventLogger.info(`Ready at    : ${readyAt.toISOString()}`)
       eventLogger.info(

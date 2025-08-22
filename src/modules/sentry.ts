@@ -3,10 +3,10 @@ import type { AutocompleteInteraction } from 'discord.js'
 import env from 'env-var'
 import {
   type ApplicationInteraction,
-  type ModuleRunner,
-  SleetModule,
   defaultModuleRunner,
+  type ModuleRunner,
   runningModuleStore,
+  SleetModule,
 } from 'sleetcord'
 import { interactionToString } from '../utils/stringify.js'
 import { censorPath } from './logging.js'

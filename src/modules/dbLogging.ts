@@ -2,7 +2,7 @@ import type { getPrismaClient } from '@prisma/client/runtime/library.js'
 import env from 'env-var'
 import type { LoggerOptions } from 'pino'
 import { runningModuleStore } from 'sleetcord'
-import { LOG_LEVEL, baseLogger } from './logging.js'
+import { baseLogger, LOG_LEVEL } from './logging.js'
 import { Sentry } from './sentry.js'
 
 type Client = ReturnType<typeof getPrismaClient> extends new () => infer T

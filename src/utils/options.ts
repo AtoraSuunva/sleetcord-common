@@ -1,7 +1,7 @@
 import {
   ApplicationCommandOptionType,
-  type CommandInteraction,
   type CommandInteractionOption,
+  type Interaction,
 } from 'discord.js'
 
 /**
@@ -32,11 +32,14 @@ export function getAllOptions(
   })
 }
 
+/** Any interaction type with an `options` property */
+export type InteractionWithOptions = Extract<Interaction, { options: unknown }>
+
 /**
  * Checks how many options the user specified for the interaction, excluding subcommands and subcommand groups
  * @param interaction The interaction to check
  * @returns The number of options specified
  */
-export function getOptionCount(interaction: CommandInteraction): number {
+export function getOptionCount(interaction: InteractionWithOptions): number {
   return getAllOptions(interaction.options.data).length
 }

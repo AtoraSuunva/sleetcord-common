@@ -1,14 +1,14 @@
 import { readFile } from 'node:fs/promises'
 import {
-  type APIApplicationCommandOptionChoice,
   type ActivityOptions,
   ActivityType,
+  type APIApplicationCommandOptionChoice,
   ApplicationCommandOptionType,
   type ChatInputCommandInteraction,
   type Client,
 } from 'discord.js'
 import env from 'env-var'
-import { type SleetContext, SleetSlashCommand, isOwnerGuard } from 'sleetcord'
+import { isOwnerGuard, type SleetContext, SleetSlashCommand } from 'sleetcord'
 import { MINUTE } from '../utils/constants.js'
 
 /** Holds the timeout that we use to periodically change the activity */
@@ -97,7 +97,7 @@ export const activity = new SleetSlashCommand(
     registerOnlyInGuilds: [],
   },
   {
-    ready: runReady,
+    clientReady: runReady,
     run: runActivity,
   },
 )

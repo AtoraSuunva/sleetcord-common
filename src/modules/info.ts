@@ -2,14 +2,14 @@ import * as os from 'node:os'
 import {
   type ChatInputCommandInteraction,
   type Client,
+  version as discordJSVersion,
   EmbedBuilder,
   type Guild,
   type Invite,
   Team,
   User,
-  version as discordJSVersion,
 } from 'discord.js'
-import { SleetSlashCommand, formatUser } from 'sleetcord'
+import { formatUser, SleetSlashCommand } from 'sleetcord'
 import { notNullish } from '../utils/functions.js'
 
 /**

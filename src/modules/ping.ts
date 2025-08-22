@@ -1,9 +1,9 @@
 import {
+  codeBlock,
   GatewayDispatchEvents,
   InteractionType,
   LimitedCollection,
   SnowflakeUtil,
-  codeBlock,
 } from 'discord.js'
 import prettyMilliseconds from 'pretty-ms'
 import { SleetSlashCommand } from 'sleetcord'

@@ -2,6 +2,7 @@ import type {
   APIRequest,
   InvalidRequestWarningData,
   RateLimitData,
+  REST,
   ResponseLike,
 } from 'discord.js'
 import env from 'env-var'
@@ -273,17 +274,21 @@ function onRateLimited(rateLimitInfo: RateLimitData) {
   )
 }
 
-function onResponse(req: APIRequest, res: ResponseLike) {
-  if (!(res instanceof Response)) {
-    djsLogger.warn(
-      "Response is not a Response object, set `makeRequest: fetch` in your rest client options. You might need `makeRequest: fetch as unknown as RESTOptions['makeRequest'],` for it to work nicely.",
-    )
-    return
-  }
-
+function onResponse(this: REST, req: APIRequest, res: ResponseLike) {
   const path = `${req.method} ${censorPath(req.path)} ${res.status} ${
     res.statusText
   }`
+
+  if (res.status === undefined) {
+    djsLogger.debug(
+      {
+        ...moduleName(),
+        type: 'rest',
+      },
+      `${path} [🌎 ${this.globalRemaining}]`,
+    )
+    return
+  }
 
   const ratelimit = {
     limit: res.headers.get('x-ratelimit-limit'),
@@ -302,19 +307,25 @@ function onResponse(req: APIRequest, res: ResponseLike) {
         ratelimit.scope ? ` ${ratelimit.scope}` : ''
       }${ratelimit.global ? '!' : ''}${
         ratelimit.retryAfter ? ` retry in ${ratelimit.retryAfter}s` : ''
-      }]`
+      }] `
     : ''
   let body = ''
 
   if (res.status >= 400) {
-    const bodyBuilder = []
+    const bodyBuilder: string[] = []
 
     if (req.method !== 'GET') {
       bodyBuilder.push('\nRequest:\n')
       bodyBuilder.push(JSON.stringify(req.data.body, null, 2))
-      if (!res.bodyUsed && res.body !== null && !res.body.locked) {
+
+      if (!res.bodyUsed && res.body !== null) {
         bodyBuilder.push('\nResponse:\n')
-        bodyBuilder.push(JSON.stringify(res.clone().body, null, 2))
+
+        if (res instanceof Response && !res.body.locked) {
+          bodyBuilder.push(JSON.stringify(res.clone().body, null, 2))
+        } else {
+          bodyBuilder.push(JSON.stringify(res.body, null, 2))
+        }
       }
     }
 
@@ -326,6 +337,6 @@ function onResponse(req: APIRequest, res: ResponseLike) {
       ...moduleName(),
       type: 'rest',
     },
-    `${path} ${ratelimitLine}${body}`,
+    `${path} ${ratelimitLine}[🌎 ${this.globalRemaining}]${body}`,
   )
 }
